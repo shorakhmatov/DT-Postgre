@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система управления заказами - Клиент</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stats-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-top: 4px solid #4facfe;
+        }
+
+        .stats-panel h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .category-stats, .product-stats {
+            margin-top: 20px;
+        }
+
+        .category-item, .product-item {
+            background: #f8f9fa;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .category-item h4, .product-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .category-item p, .product-item p {
+            color: #666;
+            font-size: 0.9em;
+            margin: 2px 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .auto-update {
+            background: #e8f5e8;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .auto-update-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Система управления заказами</h1>
+            <p>Мониторинг и управление заказами в реальном времени</p>
+        </div>
+        
+        <div class="content">
+            <div class="control-panel">
+                <h2>🚀 Панель управления</h2>
+                <div class="form-group">
+                    <label for="repeatCount">Количество повторов (N):</label>
+                    <input type="number" id="repeatCount" value="1000" min="1" max="1000">
+                </div>
+                <button class="btn" id="startBtn" onclick="startBetaScript()">
+                    Запустить Beta скрипт
+                </button>
+                <button class="btn" id="stopBtn" onclick="stopAutoUpdate()" style="display: none;">
+                    Остановить обновления
+                </button>
+            </div>
+
+            <div id="status" class="status" style="display: none;"></div>
+
+            <div class="auto-update">
+                <span class="auto-update-indicator"></span>
+                <strong>Автообновление статистики:</strong> каждую секунду
+                <span id="lastUpdate"></span>
+            </div>
+
+            <div class="stats-container">
+                <div class="stats-panel">
+                    <h3>📊 Общая статистика</h3>
+                    <div id="generalStats">
+                        <div class="stat-item">
+                            <span class="stat-label">Загрузка данных...</span>
+                            <span class="stat-value"><div class="loading-spinner"></div></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <h3>⏱️ Временные показатели</h3>
+                    <div id="timeStats">
+                        <div class="stat-item">
+                            <span class="stat-label">Загрузка данных...</span>
+                            <span class="stat-value"><div class="loading-spinner"></div></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <h3>📈 Статистика по категориям</h3>
+                <div id="categoryStats">
+                    <div class="loading-spinner"></div> Загрузка данных...
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <h3>🛍️ Топ продукты</h3>
+                <div id="productStats">
+                    <div class="loading-spinner"></div> Загрузка данных...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        let isUpdating = false;
+
+        // Запуск Beta скрипта
+        async function startBetaScript() {
+            const repeatCount = document.getElementById('repeatCount').value;
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const status = document.getElementById('status');
+
+            if (!repeatCount || repeatCount < 1) {
+                showStatus('Введите корректное количество повторов', 'error');
+                return;
+            }
+
+            startBtn.disabled = true;
+            stopBtn.style.display = 'inline-block';
+            showStatus(`Запуск Beta скрипта с N=${repeatCount}...`, 'loading');
+
+            try {
+                const response = await fetch(`scripts/beta.php?n=${repeatCount}`);
+                const result = await response.json();
+
+                if (result.status === 'completed') {
+                    const summary = result.summary;
+                    showStatus(
+                        `✅ Выполнено успешно! Процессов: ${summary.total_processes}, ` +
+                        `Успешных: ${summary.successful}, Ошибок: ${summary.errors}, ` +
+                        `Пропущено: ${summary.skipped}, Время: ${summary.total_execution_time.toFixed(2)}с`,
+                        'success'
+                    );
+                } else {
+                    showStatus(`❌ Ошибка: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Ошибка соединения: ${error.message}`, 'error');
+            } finally {
+                startBtn.disabled = false;
+                stopBtn.style.display = 'none';
+            }
+        }
+
+        // Получение статистики от Gamma скрипта
+        async function updateStatistics() {
+            if (isUpdating) return;
+            isUpdating = true;
+
+            try {
+                const response = await fetch('scripts/gamma.php');
+                const data = await response.json();
+
+                if (data.status === 'error') {
+                    console.error('Ошибка получения статистики:', data.message);
+                    return;
+                }
+
+                updateGeneralStats(data.summary);
+                updateTimeStats(data.summary);
+                updateCategoryStats(data.categories);
+                updateProductStats(data.products);
+
+                // Обновляем время последнего обновления
+                const lastUpdate = document.getElementById('lastUpdate');
+                lastUpdate.textContent = `(обновлено: ${new Date().toLocaleTimeString()})`;
+
+            } catch (error) {
+                console.error('Ошибка при получении статистики:', error);
+            } finally {
+                isUpdating = false;
+            }
+        }
+
+        // Обновление общей статистики
+        function updateGeneralStats(summary) {
+            const container = document.getElementById('generalStats');
+            container.innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Всего заказов:</span>
+                    <span class="stat-value">${summary.total_orders}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Общая выручка:</span>
+                    <span class="stat-value">${formatCurrency(summary.total_revenue)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Средний чек:</span>
+                    <span class="stat-value">${formatCurrency(summary.avg_order_value)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Время выполнения:</span>
+                    <span class="stat-value">${summary.execution_time_ms} мс</span>
+                </div>
+            `;
+        }
+
+        // Обновление временной статистики
+        function updateTimeStats(summary) {
+            const container = document.getElementById('timeStats');
+            const timePeriod = summary.time_period;
+            
+            container.innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Первый заказ:</span>
+                    <span class="stat-value">${formatDateTime(summary.first_order_time)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Последний заказ:</span>
+                    <span class="stat-value">${formatDateTime(summary.last_order_time)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Период:</span>
+                    <span class="stat-value">${timePeriod ? timePeriod.formatted : 'Нет данных'}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Всего секунд:</span>
+                    <span class="stat-value">${timePeriod ? timePeriod.total_seconds : 0}</span>
+                </div>
+            `;
+        }
+
+        // Обновление статистики по категориям
+        function updateCategoryStats(categories) {
+            const container = document.getElementById('categoryStats');
+            
+            if (!categories || categories.length === 0) {
+                container.innerHTML = '<p>Нет данных по категориям</p>';
+                return;
+            }
+
+            container.innerHTML = categories.map(category => `
+                <div class="category-item">
+                    <h4>${category.category_name}</h4>
+                    <p><strong>Заказов:</strong> ${category.order_count} | <strong>Количество:</strong> ${category.total_quantity}</p>
+                    <p><strong>Выручка:</strong> ${formatCurrency(category.total_revenue)} | <strong>Средний чек:</strong> ${formatCurrency(category.avg_order_value)}</p>
+                    <p><strong>Уникальных товаров:</strong> ${category.unique_products}</p>
+                </div>
+            `).join('');
+        }
+
+        // Обновление статистики по продуктам
+        function updateProductStats(products) {
+            const container = document.getElementById('productStats');
+            
+            if (!products || products.length === 0) {
+                container.innerHTML = '<p>Нет данных по продуктам</p>';
+                return;
+            }
+
+            // Показываем топ 10 продуктов
+            const topProducts = products.slice(0, 10);
+            
+            container.innerHTML = topProducts.map(product => `
+                <div class="product-item">
+                    <h4>${product.product_name}</h4>
+                    <p><strong>Категория:</strong> ${product.category_name}</p>
+                    <p><strong>Заказов:</strong> ${product.order_count} | <strong>Количество:</strong> ${product.total_quantity}</p>
+                    <p><strong>Выручка:</strong> ${formatCurrency(product.total_revenue)} | <strong>Средний чек:</strong> ${formatCurrency(product.avg_order_value)}</p>
+                </div>
+            `).join('');
+        }
+
+        // Показать статус
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Остановить автообновление
+        function stopAutoUpdate() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+                document.getElementById('stopBtn').style.display = 'none';
+                showStatus('Автообновление остановлено', 'success');
+            }
+        }
+
+        // Форматирование валюты
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ru-RU', {
+                style: 'currency',
+                currency: 'RUB'
+            }).format(amount);
+        }
+
+        // Форматирование даты и времени
+        function formatDateTime(dateString) {
+            if (!dateString) return 'Нет данных';
+            return new Date(dateString).toLocaleString('ru-RU');
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Первоначальная загрузка статистики
+            updateStatistics();
+            
+            // Запуск автообновления каждую секунду
+            updateInterval = setInterval(updateStatistics, 1000);
+            
+            console.log('🚀 Клиент системы управления заказами запущен');
+        });
+
+        // Обработка ошибок
+        window.addEventListener('error', function(e) {
+            console.error('Ошибка клиента:', e.error);
+            showStatus('Произошла ошибка в клиенте', 'error');
+        });
+    </script>
+</body>
+</html>
